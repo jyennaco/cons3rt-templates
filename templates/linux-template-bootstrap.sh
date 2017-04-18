@@ -15,6 +15,15 @@ if [ -d ${tbDir} ] ; then
     rm -Rf ${tbDir}
 fi
 
+# Update packages to the latest
+which yum
+if [ $? -eq 0 ] ; then
+    yum -y update
+else
+    apt-get -y update
+    apt-get -y upgrade
+fi
+
 # Set up cons3rt user and group
 groupadd cons3rt
 useradd -g cons3rt -d "/home/cons3rt" -s "/bin/bash" -c "CONS3RT User" cons3rt
@@ -22,6 +31,7 @@ usermod -a -G cons3rt cons3rt
 echo "cons3rt:TMEroot!!" | chpasswd
 sed -i "/^cons3rt/d" /etc/sudoers
 echo "cons3rt ALL=(ALL)  ALL" >> /etc/sudoers
+mkhomedir_helper cons3rt
 
 # Stage the TB 
 mkdir -p ${tbDir}
@@ -46,12 +56,12 @@ umount /media
 # Run template builder
 echo "Running template builder..."
 chmod +x ${tbDir}/runme.sh
-${tbDir}/runme.sh
-result=$?
+#${tbDir}/runme.sh
+#result=$?
 
 # Cleanup
 echo "Cleaning up..."
-rm -Rf ${tbDir}
+#rm -Rf ${tbDir}
 echo "Clearing history..."
 cat /dev/null > ~/.bash_history && history -c
 
