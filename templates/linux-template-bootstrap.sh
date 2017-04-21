@@ -22,13 +22,15 @@ if [ $? -eq 0 ] ; then
 else
     apt-get -y update
     apt-get -y upgrade
+    # Install Ubuntu GUI
+    apt-get -y install ubuntu-desktop
 fi
 
 # Set up cons3rt user and group
 groupadd cons3rt
 useradd -g cons3rt -d "/home/cons3rt" -s "/bin/bash" -c "CONS3RT User" cons3rt
 usermod -a -G cons3rt cons3rt
-echo "cons3rt:TMEroot!!" | chpasswd
+echo 'cons3rt:TMEroot!!' | chpasswd
 sed -i "/^cons3rt/d" /etc/sudoers
 echo "cons3rt ALL=(ALL)  ALL" >> /etc/sudoers
 mkhomedir_helper cons3rt

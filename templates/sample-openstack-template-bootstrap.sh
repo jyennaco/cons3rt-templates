@@ -7,15 +7,24 @@
 # - Openstack unified CLI installed
 # - Openstack credentials enabled
 
+flavor="m1.medium"
+keyName="default"
+securityGroup="ssh"
+imageId="3dae6817-36bb-4476-b68f-e743ae5490f3"
+networkId="d325c4df-730a-411d-a1b2-fb9ad4a01338"
+serverName="joe-ubuntu16"
+imageName="Ubuntu Server 16.04"
+serverId=""
+newImageId=""
+
 echo "Creating server..."
+openstack server create --flavor "${flavor}" --image "${imageId}" --key-name "${keyName}" --security-group "${securityGroup}" --nic net-id="${networkId}" --user-data ./linux-template-bootstrap.sh ${serverName}
 
-openstack server create --flavor m1.medium --image 3dae6817-36bb-4476-b68f-e743ae5490f3 --key-name default --security-group ssh --nic net-id=a2764a7e-1ced-4208-bbec-cafff31acb72 --user-data ./linux-template-bootstrap.sh joe-ubuntu16
+#echo "Creating the image..."
+#openstack server image create --name "${imageName}" "${serverId}"
 
-echo "Creating the image..."
-#openstack server image create --name "Ubuntu Server 14.04" 38c005e0-273f-42a4-a872-0d268417bc12
-
-echo "Adding image tags..."
-#openstack image set --property cons3rtenabled=true
+#echo "Adding image tags..."
+#openstack image set --property cons3rtenabled=true ${newImageId}
 
 echo "openstack exited with code: $?"
 exit 0
