@@ -76,6 +76,9 @@ cd ${tbDir}
 #${tbDir}/runme.sh
 #result=$?
 
+# Notify complete
+touch /root/USER_DATA_SCRIPT_COMPLETE
+
 # Cleanup
 /bin/echo "Cleaning up..."
 #rm -Rf ${tbDir}

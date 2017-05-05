@@ -18,14 +18,18 @@ __author__ = 'Joe Yennaco'
 # Set up logger name for this module
 mod_logger = Logify.get_name() + '.aws-template-bootstrap'
 
-# My Info
+# For launching an instance to become a new template
 my_owner_id = '017800072961'
-my_ami_id = 'ami-4191b524'
+my_ami_id = 'ami-7dbe9a18'
 my_key_name = 'Ohio Template Catalog-natkeypair'
 my_subnet_id = 'subnet-58d95331'
 my_security_group_id = 'sg-11631378'
+my_root_device_name = '/dev/sda1'
+# my_root_device_name = '/dev/xvda'
+
+# For creating or updating an AMI
 my_image_name = 'Amazon Linux'
-my_image_id = 'i-0895c6fe1cf0e4690'
+my_image_id = 'i-0c93decc9e605f262'
 
 
 def get_user_data_script(os_type='Linux'):
@@ -57,19 +61,15 @@ def get_user_data_script(os_type='Linux'):
     return script_path
 
 
-def build_template(ami_id, os_type='Linux'):
+def build_template(os_type='Linux'):
     """Builds a CONS3RT template from an AMI ID
     
-    :param ami_id: (str) ID of the AWS AMI ID to launch
     :param os_type: (str) Linux or Windows
     :return: None
     """
     log = logging.getLogger(mod_logger + '.build_template')
     if not isinstance(os_type, basestring):
         log.error('String expected for arg os_type, found: {t}'.format(t=os_type.__class__.__name__))
-        return
-    if not isinstance(ami_id, basestring):
-        log.error('String expected for arg ami_id, found: {t}'.format(t=os_type.__class__.__name__))
         return
     os_type = os_type.lower()
     if os_type != 'linux' and os_type != 'windows':
@@ -81,11 +81,12 @@ def build_template(ami_id, os_type='Linux'):
     try:
         ec2 = EC2Util()
         response = ec2.launch_instance(
-            ami_id=ami_id,
+            ami_id=my_ami_id,
             key_name=my_key_name,
             subnet_id=my_subnet_id,
             security_group_id=my_security_group_id,
-            user_data_script_path=user_data_script
+            user_data_script_path=user_data_script,
+            root_device_name=my_root_device_name
         )
     except EC2UtilError:
         _, ex, trace = sys.exc_info()
@@ -119,8 +120,8 @@ def main():
     """
     log = logging.getLogger(mod_logger + '.main')
     log.info('Running Main!!!')
-    # build_template(ami_id=my_ami_id)
-    create_new_cons3rt_template()
+    build_template(os_type='linux')
+    # create_new_cons3rt_template()
 
 
 if __name__ == '__main__':
