@@ -3,7 +3,7 @@
 # Script configuration
 templateBuilderIso="TemplateBuilderISO_17.5_04072017b.iso"
 downloadUrl="https://s3.amazonaws.com/jackpine-files/${templateBuilderIso}"
-swapConfigScript=""
+swapConfigScript="https://raw.githubusercontent.com/jyennaco/cons3rt-templates/master/templates/config-swap.sh"
 tbDir="/root/tb"
 
 # Configure SSH
@@ -68,7 +68,8 @@ cd ${tbDir}
 /bin/umount /media
 
 # Configure Swap space
-
+/bin/chmod +x ${tbDir}/config-swap.sh
+${tbDir}/config-swap.sh
 
 # Run template builder
 /bin/echo "Running template builder..."
