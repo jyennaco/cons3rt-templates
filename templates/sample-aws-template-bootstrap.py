@@ -19,17 +19,19 @@ __author__ = 'Joe Yennaco'
 mod_logger = Logify.get_name() + '.aws-template-bootstrap'
 
 # For launching an instance to become a new template
-my_owner_id = '017800072961'
-my_ami_id = 'ami-7dbe9a18'
-my_key_name = 'Ohio Template Catalog-natkeypair'
-my_subnet_id = 'subnet-58d95331'
-my_security_group_id = 'sg-11631378'
-my_root_device_name = '/dev/sda1'
-# my_root_device_name = '/dev/xvda'
+#my_owner_id = '017800072961'
+my_owner_id = '907795672550'
+my_ami_id = 'ami-d9bb07b8'
+my_key_name = 'afrl-gov-cloud-nat'
+my_subnet_id = 'subnet-5badba39'
+my_security_group_id = 'sg-fe69729c'
+#my_root_device_name = '/dev/sda1'
+my_root_device_name = '/dev/xvda'
 
 # For creating or updating an AMI
-my_image_name = 'Amazon Linux'
-my_image_id = 'i-0c93decc9e605f262'
+my_image_name = 'Red Hat 6'
+my_instance_id = 'i-0610ae697ed88cbe3'
+my_ami_id_to_update = 'ami-d9bb07b8'
 
 
 def get_user_data_script(os_type='Linux'):
@@ -105,13 +107,28 @@ def create_new_cons3rt_template():
     log = logging.getLogger(mod_logger + '.create_new_cons3rt_template')
     img = ImageUtil(owner_id=my_owner_id)
     try:
-        img.create_cons3rt_template(instance_id=my_image_id, name=my_image_name)
+        img.create_cons3rt_template(instance_id=my_instance_id, name=my_image_name)
     except ImageUtilError:
         _, ex, trace = sys.exc_info()
         msg = '{n}: There was a problem creating a new image\n{e}'.format(n=ex.__class__.__name__, e=str(ex))
         log.error(msg)
         return
 
+
+def update_cons3rt_template():
+    """Updates an existing CONS3RT template using the provided instance ID and image name
+    
+    :return: None
+    """
+    log = logging.getLogger(mod_logger + '.update_cons3rt_template')
+    img = ImageUtil(owner_id=my_owner_id)
+    try:
+        img.update_image(ami_id=my_ami_id_to_update, instance_id=my_instance_id)
+    except ImageUtilError:
+        _, ex, trace = sys.exc_info()
+        msg = '{n}: There was a problem updating an image\n{e}'.format(n=ex.__class__.__name__, e=str(ex))
+        log.error(msg)
+        return
 
 def main():
     """Sample usage for this python module
@@ -120,8 +137,9 @@ def main():
     """
     log = logging.getLogger(mod_logger + '.main')
     log.info('Running Main!!!')
-    build_template(os_type='linux')
-    # create_new_cons3rt_template()
+    #build_template(os_type='linux')
+    #create_new_cons3rt_template()
+    update_cons3rt_template()
 
 
 if __name__ == '__main__':
