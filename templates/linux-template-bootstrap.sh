@@ -23,6 +23,16 @@ tbDir="/root/tb"
 /bin/mkdir -p /home/cons3rt/.ssh
 /bin/touch /home/cons3rt/.ssh/authorized_keys
 
+# Delete old agent bootstrapper log if it exists
+if [ -f /var/log/cons3rtAgentInstaller.log ] ; then
+    rm -f /var/log/cons3rtAgentInstaller.log
+fi
+
+# Delete old guest customization logs if it exists
+if [ -d /var/log/cons3rt ] ; then
+    rm -Rf /var/log/cons3rt/
+fi
+
 # Delete UDev Rules
 if [ -e /etc/udev/rules.d/70-persistent-net.rules ] ; then
     /bin/rm -Rf /etc/udev/rules.d/70-persistent-net.rules
