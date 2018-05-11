@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script configuration
-templateBuilderIso="TemplateBuilderISO_17.5_04072017b.iso"
+templateBuilderIso="TemplateBuilderISO_18.7_04172018a.iso"
 downloadUrl="https://s3.amazonaws.com/jackpine-files/${templateBuilderIso}"
 swapConfigScript="https://raw.githubusercontent.com/jyennaco/cons3rt-templates/master/templates/config-swap.sh"
 tbDir="/root/tb"
@@ -25,12 +25,12 @@ tbDir="/root/tb"
 
 # Delete old agent bootstrapper log if it exists
 if [ -f /var/log/cons3rtAgentInstaller.log ] ; then
-    rm -f /var/log/cons3rtAgentInstaller.log
+    /bin/rm -f /var/log/cons3rtAgentInstaller.log
 fi
 
 # Delete old guest customization logs if it exists
 if [ -d /var/log/cons3rt ] ; then
-    rm -Rf /var/log/cons3rt/
+    /bin/rm -Rf /var/log/cons3rt/
 fi
 
 # Delete UDev Rules
@@ -81,20 +81,52 @@ cd ${tbDir}
 /bin/chmod +x ${tbDir}/config-swap.sh
 ${tbDir}/config-swap.sh
 
+# Set up the cloud type
+echo 'CLOUD_TYPE=1' > "${tbDir}"/cons3rt.aws
+
+# Set up Java
+tempJavaDir="${tbDir}/temp/java"
+echo "Creating temp Java dir: ${tempJavaDir}"
+mkdir -p ${tempJavaDir}
+chmod +x ${tbDir}/java/*
+
+# Determine the Java
+javaInstallFile=$(ls ${tbDir}/java/ | grep "jre" | grep "linux" | grep "x64")
+javaInstallFilePath="${tbDir}/java/${javaInstallFile}"
+
+if [ ! -f ${javaInstallFilePath} ] ; then
+    echo "ERROR: Unable to determine a Java installer to extract"
+    touch /root/USER_DATA_SCRIPT_ERROR_UNABLE_TO_DETERMINE_JAVA
+    exit 1
+fi
+
+# Extract Java
+echo "Extracting Java installer: ${javaInstallFilePath}"
+tar -xvzf ${javaInstallFilePath} -C ${tempJavaDir}
+
+# Determine the Java home dir and executable path
+javaHomeDirName=$(ls ${tempJavaDir}/ | grep "jre")
+javaHomeDir="${tempJavaDir}/${javaHomeDirName}"
+javaExecutable="${javaHomeDir}/bin/java"
+
+if [ ! -f ${javaExecutable} ] ; then
+    echo "ERROR: Unable to determine the Java executable: ${javaExecutable}"
+    touch /root/USER_DATA_SCRIPT_COMPLETE_BUT_NO_TEMPLATE_BUILDER
+    exit 2
+fi
+
 # Run template builder
 /bin/echo "Running template builder..."
-/bin/chmod +x ${tbDir}/runme.sh
-#${tbDir}/runme.sh
-#result=$?
+${javaExecutable} -jar "${tbDir}"/templatebuilder.jar -options "${tbDir}"/cons3rt.aws
 
 # Notify complete
 touch /root/USER_DATA_SCRIPT_COMPLETE
 
 # Cleanup
 /bin/echo "Cleaning up..."
-#rm -Rf ${tbDir}
+rm -Rf ${tbDir}
 /bin/echo "Clearing history..."
 /bin/cat /dev/null > ~/.bash_history && history -c
 
 # Exit with the Template Builder exit code
-exit ${result}
+exit 0
