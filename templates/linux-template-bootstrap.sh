@@ -33,6 +33,11 @@ if [ -d /var/log/cons3rt ] ; then
     /bin/rm -Rf /var/log/cons3rt/
 fi
 
+# Delete old guest customization logs if it exists
+if [ -d /opt/cons3rt-agent ] ; then
+    /bin/rm -Rf /opt/cons3rt-agent
+fi
+
 # Delete UDev Rules
 if [ -e /etc/udev/rules.d/70-persistent-net.rules ] ; then
     /bin/rm -Rf /etc/udev/rules.d/70-persistent-net.rules
@@ -124,7 +129,7 @@ touch /root/USER_DATA_SCRIPT_COMPLETE
 
 # Cleanup
 /bin/echo "Cleaning up..."
-rm -Rf ${tbDir}
+#rm -Rf ${tbDir}
 /bin/echo "Clearing history..."
 /bin/cat /dev/null > ~/.bash_history && history -c
 
