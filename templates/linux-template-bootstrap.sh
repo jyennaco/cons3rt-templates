@@ -7,21 +7,40 @@ swapConfigScript="https://raw.githubusercontent.com/jyennaco/cons3rt-templates/m
 tbDir="/root/tb"
 
 # Configure SSH
+/bin/echo -e "\n" >> /etc/ssh/sshd_config
 /bin/sed -i "/^PasswordAuthentication/d" /etc/ssh/sshd_config
 /bin/echo "PasswordAuthentication yes" >> /etc/ssh/sshd_config
-/bin/sed -i "/^AuthorizedKeysFile/d" /etc/ssh/sshd_config
-/bin/echo "AuthorizedKeysFile %h/.ssh/authorized_keys" >> /etc/ssh/sshd_config
+/bin/sed -i "/^PermitRootLogin/d" /etc/ssh/sshd_config
+/bin/echo "PermitRootLogin yes" >> /etc/ssh/sshd_config
 
-# Set up cons3rt user and group
-/usr/sbin/groupadd cons3rt
-/usr/sbin/useradd -g cons3rt -d "/home/cons3rt" -s "/bin/bash" -c "CONS3RT User" cons3rt
-/usr/sbin/usermod -a -G cons3rt cons3rt
-/bin/echo 'cons3rt:TMEroot!!' | /usr/sbin/chpasswd
-/bin/sed -i "/^cons3rt/d" /etc/sudoers
-/bin/echo "cons3rt ALL=(ALL)  ALL" >> /etc/sudoers
-/sbin/mkhomedir_helper cons3rt
-/bin/mkdir -p /home/cons3rt/.ssh
-/bin/touch /home/cons3rt/.ssh/authorized_keys
+if [ -f /usr/bin/systemctl ]; then
+    /bin/echo "Reloading sshd with systemctl..."
+    /usr/bin/systemctl reload sshd.service
+else
+    /bin/echo "Reloading sshd with service..."
+    /sbin/service sshd reload
+fi
+
+# Set up root password
+/bin/echo 'root:TMEroot!!' | /usr/sbin/chpasswd
+
+# Delete users
+if [ -d /home/cons3rt ]; then
+    /usr/sbin/userdel cons3rt
+    /bin/rm -Rf /home/cons3rt
+fi
+if [ -d /home/ec2-user ]; then
+    /usr/sbin/userdel ec2-user
+    /bin/rm -Rf /home/ec2-user
+fi
+if [ -d /home/centos ]; then
+    /usr/sbin/userdel centos
+    /bin/rm -Rf /home/centos
+fi
+if [ -d /home/maintuser ]; then
+    /usr/sbin/userdel maintuser
+    /bin/rm -Rf /home/maintuser
+fi
 
 # Delete old agent bootstrapper log if it exists
 if [ -f /var/log/cons3rtAgentInstaller.log ] ; then
@@ -84,7 +103,7 @@ cd ${tbDir}
 
 # Configure Swap space
 /bin/chmod +x ${tbDir}/config-swap.sh
-${tbDir}/config-swap.sh
+#${tbDir}/config-swap.sh
 
 # Set up the cloud type
 echo 'CLOUD_TYPE=1' > "${tbDir}"/cons3rt.aws
@@ -101,7 +120,7 @@ javaInstallFilePath="${tbDir}/java/${javaInstallFile}"
 
 if [ ! -f ${javaInstallFilePath} ] ; then
     echo "ERROR: Unable to determine a Java installer to extract"
-    touch /root/USER_DATA_SCRIPT_ERROR_UNABLE_TO_DETERMINE_JAVA
+    /bin/touch /root/USER_DATA_SCRIPT_ERROR_UNABLE_TO_DETERMINE_JAVA
     exit 1
 fi
 
@@ -115,17 +134,17 @@ javaHomeDir="${tempJavaDir}/${javaHomeDirName}"
 javaExecutable="${javaHomeDir}/bin/java"
 
 if [ ! -f ${javaExecutable} ] ; then
-    echo "ERROR: Unable to determine the Java executable: ${javaExecutable}"
-    touch /root/USER_DATA_SCRIPT_COMPLETE_BUT_NO_TEMPLATE_BUILDER
+    /bin/echo "ERROR: Unable to determine the Java executable: ${javaExecutable}"
+    /bin/touch /root/USER_DATA_SCRIPT_COMPLETE_BUT_NO_TEMPLATE_BUILDER
     exit 2
 fi
 
 # Run template builder
-/bin/echo "Running template builder..."
-${javaExecutable} -jar "${tbDir}"/templatebuilder.jar -options "${tbDir}"/cons3rt.aws
+#/bin/echo "Running template builder..."
+#${javaExecutable} -jar "${tbDir}"/templatebuilder.jar -options "${tbDir}"/cons3rt.aws
 
 # Notify complete
-touch /root/USER_DATA_SCRIPT_COMPLETE
+/bin/touch /root/USER_DATA_SCRIPT_COMPLETE
 
 # Cleanup
 /bin/echo "Cleaning up..."
