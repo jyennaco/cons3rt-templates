@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script configuration
-templateBuilderIso="TemplateBuilderISO_18.7_04172018a.iso"
+templateBuilderIso="TemplateBuilderISO_19.1_01222019a.iso"
 downloadUrl="https://s3.amazonaws.com/jackpine-files/${templateBuilderIso}"
 swapConfigScript="https://raw.githubusercontent.com/jyennaco/cons3rt-templates/master/templates/config-swap.sh"
 tbDir="/root/tb"
@@ -103,7 +103,7 @@ cd ${tbDir}
 
 # Configure Swap space
 /bin/chmod +x ${tbDir}/config-swap.sh
-#${tbDir}/config-swap.sh
+${tbDir}/config-swap.sh
 
 # Set up the cloud type
 echo 'CLOUD_TYPE=1' > "${tbDir}"/cons3rt.aws
