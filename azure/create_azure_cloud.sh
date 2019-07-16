@@ -105,7 +105,11 @@ if [ -z "${appPassword}" ]; then echo "ERROR: Unable to create password for App 
 
 echo "Created app password: ${appPassword}"
 
+echo "Waiting 10 seconds for the app registration to be created..."
+sleep 10
+
 echo "Setting permissions for App ID ${appId} to subscription contributor for subscription: ${subscriptionId}"
+sleep 1
 az role assignment create --assignee ${appId} --scope /subscriptions/${subscriptionId} --role Contributor
 if [ $? -ne 0 ]; then echo "ERROR: Unable to set permissions for app ID: ${appId}, to Contributor for subscription: ${subscriptionId}"; exit 1; fi
 
